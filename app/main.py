@@ -1,5 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
+from sqlalchemy.orm import Session
+import db
 import service
+db.Base.metadata.create_all(db.engine)
 
 app = FastAPI()
 
@@ -9,7 +12,7 @@ def root():
 
 
 @app.post("/detect")
-async def detect(file:UploadFile = File(...)):
+async def create_detection(file:UploadFile = File(...), db:Session = Depends(db.get_db)):
     img_bytes = await file.read()
 
     try:
@@ -17,7 +20,12 @@ async def detect(file:UploadFile = File(...)):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid image")
 
-    detections = service.detection(img)
-    response = service.count(detections)
+    detections = service.detect_object(img)
+    summary = service.count(detections)
 
-    return response
+    try:
+        detection_id = service.save_detection(db, summary)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to save detection")
+    
+    return {"detection_id":detection_id}

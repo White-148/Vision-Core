@@ -1,5 +1,7 @@
 fastapi
 uvicorn
+ultralytics
 python-multipart
-cv2
+opencv-python
 numpy
+sqlalchemy
