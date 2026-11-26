@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, responses
+from fastapi import FastAPI, UploadFile, File, HTTPException
 import service
 
 app = FastAPI()
@@ -18,5 +18,6 @@ async def detect(file:UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Invalid image")
 
     detections = service.detection(img)
+    response = service.count(detections)
 
-    return detections
+    return response
