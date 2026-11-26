@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, responses
 import service
 
 app = FastAPI()
@@ -13,8 +13,10 @@ async def detect(file:UploadFile = File(...)):
     img_bytes = await file.read()
 
     try:
-        dimensions = service.get_dimensions(img_bytes)
+        img = service.check_img(img_bytes)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid image")
 
-    return dimensions
+    detections = service.detection(img)
+
+    return detections
