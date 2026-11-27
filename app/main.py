@@ -2,6 +2,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 import db
 import service
+import models
+
 db.Base.metadata.create_all(db.engine)
 
 app = FastAPI()
@@ -29,3 +31,14 @@ async def create_detection(file:UploadFile = File(...), db:Session = Depends(db.
         raise HTTPException(status_code=500, detail="Failed to save detection")
     
     return {"detection_id":detection_id}
+
+
+
+@app.get("/detect/{detection_id}",
+         response_model = models.DetectionResponse)
+def get_detection(detection_id:int, db:Session = Depends(db.get_db)):
+    try:
+        data = service.get_detection(detection_id, db)
+        return data
+    except ValueError as err:    
+        raise HTTPException(status_code=404, detail=str(err))

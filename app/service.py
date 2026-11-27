@@ -49,14 +49,21 @@ def count(detections:list[dict]) -> dict:
 
 
 
-def save_detection(db:Session, summary:dict):
+def save_detection(db_session:Session, summary:dict):
     try:
         data = models.Detection(**summary)
-        db.add(data)
-        db.commit()
-        db.refresh(data)
+        db_session.add(data)
+        db_session.commit()
+        db_session.refresh(data)
         return data.id
     except Exception:
-        db.rollback()
+        db_session.rollback()
         raise 
 
+
+def get_detection(detection_id:int, db_session:Session):
+    data = db_session.query(models.Detection).filter(models.Detection.id == detection_id).first()
+    if data:
+        return data
+    else:
+        raise ValueError("detection not found")
